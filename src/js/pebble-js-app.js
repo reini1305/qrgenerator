@@ -22,7 +22,10 @@ function generateCode() {
     for ( i = 0; i < code.length; i++ )
       sendtopebble[j*code.length+i] = Number(code[i][j]);
   }
-  Pebble.sendAppMessage({"qrcode": sendtopebble});
+  var msg = {};
+  msg.qrcode = sendtopebble;
+  msg.description = text;
+  Pebble.sendAppMessage(msg);
 }
 
 // Set callback for the app ready event
