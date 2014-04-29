@@ -13,7 +13,7 @@ function generateCode() {
   var code = qrencode.encodeString(text, 0,
                                    qrencode.QR_ECLEVEL_L,
                                    qrencode.QR_MODE_8, true);
-  console.log("Generated QR Code: "+code.length.toString());
+  console.log("Generated QR Code for: "+text);
   var j;
   var i;
   var sendtopebble = [];
@@ -62,7 +62,7 @@ Pebble.addEventListener('showConfiguration', function(e) {
 Pebble.addEventListener('webviewclosed', function(e) {
                         console.log('configuration closed');
                         if (e.response) {
-                        var options = JSON.parse(decodeURIComponent(e.response));
+                        var options = JSON.parse(decodeURIComponent(unescape(e.response)));
                         console.log('options received from configuration: ' + JSON.stringify(options));
                         text = options['text'];
                         //console.log("New option:")
