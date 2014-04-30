@@ -5,15 +5,21 @@ var qrencode=function(){var a=function(){function a(a,b){this.type=a,this.msg=b}
 
 
 // We use the fake "PBL" symbol as default
-var defaultText = "Welcome";
+var defaultText = ["Welcome", "to", "QR code", "generator"];
 var text = defaultText;
+var defaultID = 0;
+var ID = defaultID;
 
 function generateCode() {
   var response;
-  var code = qrencode.encodeString(text, 0,
+  var toencode = text[ID];
+  if(toencode==="")
+    toencode = " ";
+  var code = qrencode.encodeString(toencode, 0,
                                    qrencode.QR_ECLEVEL_L,
                                    qrencode.QR_MODE_8, true);
-  console.log("Generated QR Code for: "+text);
+  console.log("Generated QR Code for: "+text[ID]);
+  console.log("ID: "+ID.toString());
   var j;
   var i;
   var sendtopebble = [];
@@ -24,7 +30,8 @@ function generateCode() {
   }
   var msg = {};
   msg.qrcode = sendtopebble;
-  msg.description = text;
+  msg.description = text[ID];
+  msg.id = ID;
   Pebble.sendAppMessage(msg);
 }
 
@@ -35,8 +42,12 @@ Pebble.addEventListener("ready",
                           console.log(e.type);
                           // Fetch saved symbol from local storage (using
                           // standard localStorage webAPI)
-                          text = localStorage.getItem("text");
-                          if (!text) {
+                        //localStorage.clear();
+                        text[0] = localStorage.getItem("text");
+                        text[1] = localStorage.getItem("text1");
+                        text[2] = localStorage.getItem("text2");
+                        text[3] = localStorage.getItem("text3");
+                          if (!text[0]) {
                             text = defaultText;
                           }
                           generateCode();
@@ -47,14 +58,16 @@ Pebble.addEventListener("appmessage",
                         function(e) {
                           console.log("message");
                           if (e.payload.fetch) {
+                            ID = e.payload.fetch-1;
                             generateCode();
                           }
                         });
 
 Pebble.addEventListener('showConfiguration', function(e) {
                         var uri = 'http://musikkapelle-hollenegg.at/images/configuration_qr.html?' +
-                        'text=' + encodeURIComponent(text);
-                        //console.log('showing configuration at uri: ' + uri);
+                        'text=' + encodeURIComponent(text[0])+'&text2=' + encodeURIComponent(text[1])+
+                        '&text3=' + encodeURIComponent(text[2])+'&text4=' + encodeURIComponent(text[3]);
+                        console.log('showing configuration at uri: ' + uri);
                         Pebble.openURL(uri);
                         });
 
@@ -64,9 +77,15 @@ Pebble.addEventListener('webviewclosed', function(e) {
                         if (e.response) {
                         var options = JSON.parse(decodeURIComponent(unescape(e.response)));
                         console.log('options received from configuration: ' + JSON.stringify(options));
-                        text = options['text'];
+                        text[0] = options['text'];
+                        text[1] = options['text2'];
+                        text[2] = options['text3'];
+                        text[3] = options['text4'];
                         //console.log("New option:")
-                        localStorage.setItem('text', text);
+                        localStorage.setItem('text', text[0]);
+                        localStorage.setItem('text1', text[1]);
+                        localStorage.setItem('text2', text[2]);
+                        localStorage.setItem('text3', text[3]);
                         generateCode();
                         
                         } else {

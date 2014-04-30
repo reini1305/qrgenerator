@@ -23,7 +23,19 @@
 					<label for="text">Text to convert to a QR Code:</label>
 					<input type="text" name="text" id="text" value="" />
 				</div>
-
+				<div data-role="fieldcontain">
+					<label for="text">2nd Text (optional):</label>
+					<input type="text" name="text2" id="text2" value="" />
+				</div>
+				<div data-role="fieldcontain">
+					<label for="text">3rd Text (optional):</label>
+					<input type="text" name="text3" id="text3" value="" />
+				</div>
+				<div data-role="fieldcontain">
+					<label for="text">4th Text (optional):</label>
+					<input type="text" name="text4" id="text4" value="" />
+				</div>
+				Use the up/down buttons on your watch to cycle through the different texts.
 				<div class='ui-body ui-body-b'>
 					<fieldset class='ui-grid-a'>
 						<div class='ui-block-a'><button type='submit' data-theme='d' id='b-cancel'>Cancel</button></div>
@@ -48,6 +60,9 @@
 			function saveOptions() {
 				var options = {
 					'text': $('#text').val(),
+					'text2': $('#text2').val(),
+					'text3': $('#text3').val(),
+					'text4': $('#text4').val(),
 				}
 				return options;
 			}
@@ -60,6 +75,9 @@
 					document.location = 'pebblejs://close#' + escape(encodeURIComponent(JSON.stringify(saveOptions())));
 				});
 				$('#text').val(getQueryVariable('text'));
+				$('#text2').val(getQueryVariable('text2'));
+				$('#text3').val(getQueryVariable('text3'));
+				$('#text4').val(getQueryVariable('text4'));
 			});
 		</script>
 	</body>

@@ -7,29 +7,25 @@ static TextLayer *description_layer;
 static char description_text[41];
 static AppTimer *light_timer;
 static AppTimer *descr_timer;
+static int id=0;
 
 enum {
   QUOTE_KEY_QRCODE = 0x0,
   QUOTE_KEY_FETCH = 0x1,
-  QUOTE_KEY_DESCRIPTION = 0x2
+  QUOTE_KEY_DESCRIPTION = 0x2,
+  QUOTE_KEY_ID=0x3
 };
 
-static bool send_to_phone_multi(int quote_key, char *symbol) {
-  if ((quote_key == -1) && (symbol == NULL)) {
-    APP_LOG(APP_LOG_LEVEL_DEBUG, "no data to send");
-    // well, the "nothing" that was sent to us was queued, anyway ...
-    return true;
-  }
+static bool send_to_phone_multi(int quote_key, int symbol) {
+  
+  // Loadinating
+  text_layer_set_text(description_layer, "Loading...");
+  layer_set_hidden(text_layer_get_layer(description_layer), false);
+  
   DictionaryIterator *iter;
   app_message_outbox_begin(&iter);
-  if (iter == NULL) {
-    APP_LOG(APP_LOG_LEVEL_DEBUG, "null iter");
-    return false;
-  }
 
-  Tuplet tuple = (symbol == NULL)
-                      ? TupletInteger(quote_key, 1)
-                      : TupletCString(quote_key, symbol);
+  Tuplet tuple = TupletInteger(quote_key, symbol);
   dict_write_tuplet(iter, &tuple);
   dict_write_end(iter);
 
@@ -66,6 +62,19 @@ static void description_click_handler(ClickRecognizerRef recognizer, void *conte
   enable_light();
 }
 
+static void previous_click_handler(ClickRecognizerRef recognizer, void *context) {
+  id--;
+  if(id<0)
+    id=3;
+  send_to_phone_multi(QUOTE_KEY_FETCH,id+1);
+}
+static void next_click_handler(ClickRecognizerRef recognizer, void *context) {
+  id++;
+  if(id>3)
+    id=0;
+  send_to_phone_multi(QUOTE_KEY_FETCH,id+1);
+}
+
 static void in_received_handler(DictionaryIterator *iter, void *context) {
   qr_tuple = dict_find(iter, QUOTE_KEY_QRCODE);
   if (qr_tuple) {
@@ -81,6 +90,11 @@ static void in_received_handler(DictionaryIterator *iter, void *context) {
     show_description();
 
   }
+  /*Tuple *id_tuple = dict_find(iter,QUOTE_KEY_ID);
+  if(id_tuple)
+  {
+    id = id_tuple->value->int32+1;
+  }*/
 }
 
 static void in_dropped_handler(AppMessageResult reason, void *context) {
@@ -135,10 +149,11 @@ static void qr_layer_draw(Layer *layer, GContext *ctx)
     }
   }
 }
+
 static void window_click_config_provider(void *context) {
   const uint16_t repeat_interval_ms = 1000;
-  window_single_repeating_click_subscribe(BUTTON_ID_UP, repeat_interval_ms, (ClickHandler) description_click_handler);
-  window_single_repeating_click_subscribe(BUTTON_ID_DOWN, repeat_interval_ms, (ClickHandler) description_click_handler);
+  window_single_repeating_click_subscribe(BUTTON_ID_UP, repeat_interval_ms, (ClickHandler) previous_click_handler);
+  window_single_repeating_click_subscribe(BUTTON_ID_DOWN, repeat_interval_ms, (ClickHandler) next_click_handler);
   window_single_repeating_click_subscribe(BUTTON_ID_SELECT, repeat_interval_ms, (ClickHandler) description_click_handler);
 }
 
@@ -163,7 +178,7 @@ static void window_load(Window *window) {
   
   enable_light();
   
-  send_to_phone_multi(QUOTE_KEY_FETCH,NULL);
+  send_to_phone_multi(QUOTE_KEY_FETCH,id+1);
 }
 
 static void window_unload(Window *window) {
