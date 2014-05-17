@@ -6,19 +6,33 @@ var qrencode=function(){var a=function(){function a(a,b){this.type=a,this.msg=b}
 
 // We use the fake "PBL" symbol as default
 var defaultText = ["Welcome", "to", "QR code", "generator"];
-var text = defaultText;
+var defaultName = "Jon Doe";
+var defailtAddress = "Example Street 12, 12345 City";
+var defaultPhonenumber = "+9255558888";
+var defaultEmail = "example@example.com";
 var defaultID = 0;
 var ID = defaultID;
+var name = defaultName;
+var text = defaultText;
+var address = defailtAddress;
+var phonenumber = defaultPhonenumber;
+var email = defaultEmail;
 
 function generateCode() {
   var response;
-  var toencode = text[ID];
-  if(toencode==="")
-    toencode = " ";
+  var toencode;
+  if(ID<4)
+  {
+    toencode= text[ID];
+    if(toencode==="")
+      toencode = " ";
+  } else {
+    toencode = "MECARD:N:"+name+";ADR:"+address+";TEL:"+phonenumber+";EMAIL:"+email+";;";
+  }
   var code = qrencode.encodeString(toencode, 0,
                                    qrencode.QR_ECLEVEL_L,
                                    qrencode.QR_MODE_8, true);
-  console.log("Generated QR Code for: "+text[ID]);
+  console.log("Generated QR Code for: "+toencode);
   console.log("ID: "+ID.toString());
   var j;
   var i;
@@ -30,7 +44,10 @@ function generateCode() {
   }
   var msg = {};
   msg.qrcode = sendtopebble;
-  msg.description = text[ID];
+  if(ID<4)
+    msg.description = text[ID];
+  else
+    msg.description = "Business card: "+name;
   msg.id = ID;
   Pebble.sendAppMessage(msg);
 }
@@ -47,8 +64,17 @@ Pebble.addEventListener("ready",
                         text[1] = localStorage.getItem("text1");
                         text[2] = localStorage.getItem("text2");
                         text[3] = localStorage.getItem("text3");
+                        name = localStorage.getItem("name");
+                        address = localStorage.getItem("address");
+                        phonenumber = localStorage.getItem("phonenumber");
+                        email = localStorage.getItem("email");
                           if (!text[0]) {
                             text = defaultText;
+                            name = defaultName;
+                            text = defaultText;
+                            address = defailtAddress;
+                            phonenumber = defaultPhonenumber;
+                            email = defaultEmail;
                           }
                           generateCode();
                         });
@@ -64,9 +90,11 @@ Pebble.addEventListener("appmessage",
                         });
 
 Pebble.addEventListener('showConfiguration', function(e) {
-                        var uri = 'http://musikkapelle-hollenegg.at/images/configuration_qr.html?' +
+                        var uri = 'http://musikkapelle-hollenegg.at/images/configuration_qr_new.html?' +
                         'text=' + encodeURIComponent(text[0])+'&text2=' + encodeURIComponent(text[1])+
-                        '&text3=' + encodeURIComponent(text[2])+'&text4=' + encodeURIComponent(text[3]);
+                        '&text3=' + encodeURIComponent(text[2])+'&text4=' + encodeURIComponent(text[3])+
+                        '&name=' + encodeURIComponent(name)+'&address=' + encodeURIComponent(address)+
+                        '&phonenumber=' + encodeURIComponent(phonenumber)+'&email=' + encodeURIComponent(email);
                         console.log('showing configuration at uri: ' + uri);
                         Pebble.openURL(uri);
                         });
@@ -81,11 +109,19 @@ Pebble.addEventListener('webviewclosed', function(e) {
                         text[1] = options['text2'];
                         text[2] = options['text3'];
                         text[3] = options['text4'];
+                        address = options['address'];
+                        name = options['name'];
+                        phonenumber = options['phonenumber'];
+                        email = options['email'];
                         //console.log("New option:")
                         localStorage.setItem('text', text[0]);
                         localStorage.setItem('text1', text[1]);
                         localStorage.setItem('text2', text[2]);
                         localStorage.setItem('text3', text[3]);
+                        localStorage.setItem('name',name);
+                        localStorage.setItem('address',address);
+                        localStorage.setItem('phonenumber',phonenumber);
+                        localStorage.setItem('email',email);
                         generateCode();
                         
                         } else {
