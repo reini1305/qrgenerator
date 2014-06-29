@@ -10,7 +10,7 @@ var defaultName = "Jon Doe";
 var defailtAddress = "Example Street 12, 12345 City";
 var defaultPhonenumber = "+9255558888";
 var defaultEmail = "example@example.com";
-var defaultID = 0;
+var defaultID = 4;
 var ID = defaultID;
 var name = defaultName;
 var text = defaultText;
@@ -29,6 +29,7 @@ function generateCode() {
   } else {
     toencode = "MECARD:N:"+name+";ADR:"+address+";TEL:"+phonenumber+";EMAIL:"+email+";;";
   }
+  toencode = toencode.substring(0,130);
   var code = qrencode.encodeString(toencode, 0,
                                    qrencode.QR_ECLEVEL_L,
                                    qrencode.QR_MODE_8, true);
@@ -95,7 +96,7 @@ Pebble.addEventListener('showConfiguration', function(e) {
                         '&text3=' + encodeURIComponent(text[2])+'&text4=' + encodeURIComponent(text[3])+
                         '&name=' + encodeURIComponent(name)+'&address=' + encodeURIComponent(address)+
                         '&phonenumber=' + encodeURIComponent(phonenumber)+'&email=' + encodeURIComponent(email);
-                        console.log('showing configuration at uri: ' + uri);
+                        //console.log('showing configuration at uri: ' + uri);
                         Pebble.openURL(uri);
                         });
 

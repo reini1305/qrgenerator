@@ -7,7 +7,7 @@ static TextLayer *description_layer;
 static char description_text[41];
 static AppTimer *light_timer;
 static AppTimer *descr_timer;
-static int id=0;
+static int id=4;
 
 enum {
   QUOTE_KEY_QRCODE = 0x0,
@@ -187,10 +187,18 @@ static void window_unload(Window *window) {
   light_enable(false);
 }
 
+static void accel_tap_handler(AccelAxisType axis, int32_t direction) {
+  // Process tap on ACCEL_AXIS_X, ACCEL_AXIS_Y or ACCEL_AXIS_Z
+  // Direction is 1 or -1
+  enable_light();
+}
+
+
 static void init(void) {
 
   app_message_init();
-
+  
+  accel_tap_service_subscribe(&accel_tap_handler);
 
   window = window_create();
 
@@ -206,6 +214,7 @@ static void init(void) {
 
 static void deinit(void) {
   window_destroy(window);
+  accel_tap_service_unsubscribe();
 }
 
 int main(void) {
