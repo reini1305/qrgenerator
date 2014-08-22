@@ -1,12 +1,15 @@
 #include <pebble.h>
 
+#define TEXT_LENGTH 128
+
 static Window *window;
 static Layer *qr_layer;
 static Tuple *qr_tuple;
 static TextLayer *description_layer;
-static char description_text[41];
+static char description_text[TEXT_LENGTH];
 static AppTimer *light_timer;
-static AppTimer *descr_timer;
+static PropertyAnimation *animation;
+//static AppTimer *descr_timer;
 static int id=4;
 
 enum {
@@ -16,11 +19,40 @@ enum {
   QUOTE_KEY_ID=0x3
 };
 
+static void animation_stopped(PropertyAnimation *animation, bool finished, void *data) {
+  property_animation_destroy(animation);
+  layer_set_frame(text_layer_get_layer(description_layer),GRect(0, 144, 5*144, 24));
+}
+
+static void animate_layer_bounds(Layer* layer, GRect toRect)
+{
+  animation = property_animation_create_layer_frame(layer, NULL, &toRect);
+  animation_set_handlers((Animation*) animation, (AnimationHandlers) {
+    .stopped = (AnimationStoppedHandler) animation_stopped,
+  }, NULL);
+  animation_set_duration((Animation*)animation,3000);
+  animation_set_curve((Animation*)animation,AnimationCurveEaseInOut);
+  animation_schedule((Animation*)animation);
+}
+
+void show_description(char* new_text,bool scroll)
+{
+  text_layer_set_text(description_layer,new_text);
+  // Scroll to the right
+  if(scroll)
+  {
+    GRect current_size = layer_get_frame(text_layer_get_layer(description_layer));
+    GSize new_size = text_layer_get_content_size(description_layer);
+    animate_layer_bounds(text_layer_get_layer(description_layer), GRect(current_size.origin.x-(new_size.w<144?144:new_size.w)+144,current_size.origin.y,
+                                                                      5*144,current_size.size.h));
+  }
+}
+
 static bool send_to_phone_multi(int quote_key, int symbol) {
   
   // Loadinating
-  text_layer_set_text(description_layer, "Loading...");
-  layer_set_hidden(text_layer_get_layer(description_layer), false);
+  show_description("Loading...",false);
+  //layer_set_hidden(text_layer_get_layer(description_layer), false);
   
   DictionaryIterator *iter;
   app_message_outbox_begin(&iter);
@@ -33,10 +65,10 @@ static bool send_to_phone_multi(int quote_key, int symbol) {
   return true;
 }
 
-static void hide_layer(void *data)
+/*static void hide_layer(void *data)
 {
   layer_set_hidden(text_layer_get_layer(description_layer), true);
-}
+}*/
 
 static void light_off(void *data)
 {
@@ -50,15 +82,8 @@ static void enable_light(void)
     light_timer = app_timer_register(10000,light_off,NULL);
 }
 
-static void show_description(void)
-{
-  layer_set_hidden(text_layer_get_layer(description_layer), false);
-  if(!app_timer_reschedule(descr_timer,1500))
-    descr_timer = app_timer_register(1500,hide_layer,NULL);
-}
-
 static void description_click_handler(ClickRecognizerRef recognizer, void *context) {
-  show_description();
+  show_description(description_text,true);
   enable_light();
 }
 
@@ -78,16 +103,15 @@ static void next_click_handler(ClickRecognizerRef recognizer, void *context) {
 static void in_received_handler(DictionaryIterator *iter, void *context) {
   qr_tuple = dict_find(iter, QUOTE_KEY_QRCODE);
   if (qr_tuple) {
-    APP_LOG(APP_LOG_LEVEL_DEBUG,"Length of String: %d",qr_tuple->length);
+    //APP_LOG(APP_LOG_LEVEL_DEBUG,"Length of String: %d",qr_tuple->length);
     layer_mark_dirty(qr_layer);
-    layer_set_hidden(text_layer_get_layer(description_layer), true);
+    //layer_set_hidden(text_layer_get_layer(description_layer), true);
   }
   Tuple *descr_tuple = dict_find(iter, QUOTE_KEY_DESCRIPTION);
   if(descr_tuple)
   {
-    strncpy(description_text, descr_tuple->value->cstring, 40);
-    text_layer_set_text(description_layer, description_text);
-    show_description();
+    strncpy(description_text, descr_tuple->value->cstring, TEXT_LENGTH-1);
+    show_description(description_text,true);
 
   }
   /*Tuple *id_tuple = dict_find(iter,QUOTE_KEY_ID);
@@ -127,12 +151,12 @@ static void qr_layer_draw(Layer *layer, GContext *ctx)
   if(qr_tuple){
     enable_light();
     int code_length = my_sqrt(qr_tuple->length);
-    APP_LOG(APP_LOG_LEVEL_DEBUG,"Code Length: %d",code_length);
+    //APP_LOG(APP_LOG_LEVEL_DEBUG,"Code Length: %d",code_length);
     GRect bounds = layer_get_bounds(layer);
     int pixel_size = bounds.size.w/code_length;
     int width = pixel_size*code_length;
     int offset_x = (bounds.size.w-width)/2;
-    APP_LOG(APP_LOG_LEVEL_DEBUG,"Pixel Size: %d",pixel_size);
+    //APP_LOG(APP_LOG_LEVEL_DEBUG,"Pixel Size: %d",pixel_size);
     GRect current_pixel = GRect(0, 0, pixel_size,pixel_size);
     graphics_context_set_fill_color(ctx, GColorBlack);
     for (int i=0;i<code_length;i++)
@@ -170,10 +194,14 @@ static void window_load(Window *window) {
   layer_add_child(window_layer, qr_layer);
   layer_set_update_proc(qr_layer, qr_layer_draw);
   
-  description_layer = text_layer_create(GRect(offset, bounds.size.h/2, bounds.size.w, bounds.size.h));
-  text_layer_set_text_alignment(description_layer,GTextAlignmentCenter);
-  text_layer_set_font(description_layer, fonts_get_system_font(FONT_KEY_GOTHIC_24));
-  text_layer_set_text(description_layer, "Loading...");
+  layer_set_clips(window_layer,false);
+  description_layer = text_layer_create(GRect(0, 144, 5*144, 24));
+  layer_set_clips(text_layer_get_layer(description_layer),false);
+  //text_layer_set_text_alignment(description_layer,GTextAlignmentCenter);
+  text_layer_set_font(description_layer, fonts_get_system_font(FONT_KEY_GOTHIC_18));
+  text_layer_set_background_color(description_layer,GColorBlack);
+  text_layer_set_text_color(description_layer,GColorWhite);
+  show_description("Loading...",false);
   layer_add_child(window_layer, text_layer_get_layer(description_layer));
   
   enable_light();
@@ -208,6 +236,7 @@ static void init(void) {
     .unload = window_unload,
   });
 
+  window_set_fullscreen(window,true);
   const bool animated = true;
   window_stack_push(window, animated);
 }
@@ -220,7 +249,7 @@ static void deinit(void) {
 int main(void) {
   init();
 
-  APP_LOG(APP_LOG_LEVEL_DEBUG, "Done initializing, pushed window: %p", window);
+  //APP_LOG(APP_LOG_LEVEL_DEBUG, "Done initializing, pushed window: %p", window);
 
   app_event_loop();
   deinit();
