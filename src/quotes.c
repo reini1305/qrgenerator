@@ -8,7 +8,8 @@ static Tuple *qr_tuple;
 static TextLayer *description_layer;
 static char description_text[TEXT_LENGTH];
 static AppTimer *light_timer;
-static PropertyAnimation *animation;
+static PropertyAnimation *animation=NULL;
+static bool animation_finished=true;
 //static AppTimer *descr_timer;
 static int id=4;
 
@@ -21,37 +22,46 @@ enum {
 
 static void animation_stopped(PropertyAnimation *animation, bool finished, void *data) {
   property_animation_destroy(animation);
+  animation_finished=true;
   layer_set_frame(text_layer_get_layer(description_layer),GRect(0, 144, 5*144, 24));
 }
 
 static void animate_layer_bounds(Layer* layer, GRect toRect)
 {
+  if(!animation_finished)
+  {
+    //APP_LOG(APP_LOG_LEVEL_DEBUG,"in cleanup...");
+    animation_unschedule((Animation*)animation);
+    //property_animation_destroy(animation);
+    animation_finished=true;
+    layer_set_frame(text_layer_get_layer(description_layer),GRect(0, 144, 5*144, 24));
+  }
   animation = property_animation_create_layer_frame(layer, NULL, &toRect);
   animation_set_handlers((Animation*) animation, (AnimationHandlers) {
     .stopped = (AnimationStoppedHandler) animation_stopped,
   }, NULL);
   animation_set_duration((Animation*)animation,3000);
   animation_set_curve((Animation*)animation,AnimationCurveEaseInOut);
+  animation_finished=false;
+  //APP_LOG(APP_LOG_LEVEL_DEBUG,"animation running...");
   animation_schedule((Animation*)animation);
 }
 
-void show_description(char* new_text,bool scroll)
+void show_description(char* new_text)
 {
-  text_layer_set_text(description_layer,new_text);
+  strncpy(description_text, new_text, TEXT_LENGTH-1);
+  //text_layer_set_text(description_layer,new_text);
   // Scroll to the right
-  if(scroll)
-  {
-    GRect current_size = layer_get_frame(text_layer_get_layer(description_layer));
-    GSize new_size = text_layer_get_content_size(description_layer);
-    animate_layer_bounds(text_layer_get_layer(description_layer), GRect(current_size.origin.x-(new_size.w<144?144:new_size.w)+144,current_size.origin.y,
+  GRect current_size = layer_get_frame(text_layer_get_layer(description_layer));
+  GSize new_size = text_layer_get_content_size(description_layer);
+  animate_layer_bounds(text_layer_get_layer(description_layer), GRect(current_size.origin.x-(new_size.w<144?144:new_size.w)+144,current_size.origin.y,
                                                                       5*144,current_size.size.h));
-  }
 }
 
 static bool send_to_phone_multi(int quote_key, int symbol) {
   
   // Loadinating
-  show_description("Loading...",false);
+  show_description("Loading...");
   //layer_set_hidden(text_layer_get_layer(description_layer), false);
   
   DictionaryIterator *iter;
@@ -83,7 +93,7 @@ static void enable_light(void)
 }
 
 static void description_click_handler(ClickRecognizerRef recognizer, void *context) {
-  show_description(description_text,true);
+  show_description(description_text);
   enable_light();
 }
 
@@ -110,9 +120,7 @@ static void in_received_handler(DictionaryIterator *iter, void *context) {
   Tuple *descr_tuple = dict_find(iter, QUOTE_KEY_DESCRIPTION);
   if(descr_tuple)
   {
-    strncpy(description_text, descr_tuple->value->cstring, TEXT_LENGTH-1);
-    show_description(description_text,true);
-
+    show_description(descr_tuple->value->cstring);
   }
   /*Tuple *id_tuple = dict_find(iter,QUOTE_KEY_ID);
   if(id_tuple)
@@ -201,7 +209,8 @@ static void window_load(Window *window) {
   text_layer_set_font(description_layer, fonts_get_system_font(FONT_KEY_GOTHIC_18));
   text_layer_set_background_color(description_layer,GColorBlack);
   text_layer_set_text_color(description_layer,GColorWhite);
-  show_description("Loading...",false);
+  text_layer_set_text(description_layer,description_text);
+  show_description("Loading...");
   layer_add_child(window_layer, text_layer_get_layer(description_layer));
   
   enable_light();
@@ -225,6 +234,8 @@ static void accel_tap_handler(AccelAxisType axis, int32_t direction) {
 static void init(void) {
 
   app_message_init();
+  
+  animation_finished=true;
   
   accel_tap_service_subscribe(&accel_tap_handler);
 
