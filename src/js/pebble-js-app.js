@@ -18,9 +18,11 @@ var address = defailtAddress;
 var phonenumber = defaultPhonenumber;
 var email = defaultEmail;
 
+
 function generateCode() {
   var response;
   var toencode;
+  var truncated = false;
   if(ID<4)
   {
     toencode= text[ID];
@@ -29,7 +31,14 @@ function generateCode() {
   } else {
     toencode = "MECARD:N:"+name+";ADR:"+address+";TEL:"+phonenumber+";EMAIL:"+email+";;";
   }
-  toencode = toencode.substring(0,130);
+  //toencode = toencode.substring(0,130);
+  if(toencode.length>=132){
+    toencode = "Warning: Text is truncated, limit is 130 chars...";
+    truncated = true;
+  }
+  else{
+    truncated = false;
+  }
   var code = qrencode.encodeString(toencode, 0,
                                    qrencode.QR_ECLEVEL_L,
                                    qrencode.QR_MODE_8, true);
@@ -45,10 +54,15 @@ function generateCode() {
   }
   var msg = {};
   msg.qrcode = sendtopebble;
-  if(ID<4)
-    msg.description = text[ID];
-  else
-    msg.description = "Business card: "+name;
+  if(truncated==true){
+    msg.description = "Error: text is too long, limit is 130 chars...";
+  }
+  else{
+    if(ID<4)
+      msg.description = text[ID];
+    else
+      msg.description = "Business card: "+name;
+  }
   msg.id = ID;
   Pebble.sendAppMessage(msg);
 }
