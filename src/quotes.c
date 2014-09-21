@@ -100,7 +100,7 @@ static void description_click_handler(ClickRecognizerRef recognizer, void *conte
 static void previous_click_handler(ClickRecognizerRef recognizer, void *context) {
   id--;
   if(id<0)
-    id=4;
+    id=5;
   send_to_phone_multi(QUOTE_KEY_FETCH,id+1);
 }
 static void next_click_handler(ClickRecognizerRef recognizer, void *context) {
