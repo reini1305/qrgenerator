@@ -28,9 +28,12 @@ function generateCode() {
     toencode= text[ID];
     if(toencode==="")
       toencode = " ";
-  } else {
-    toencode = "MECARD:N:"+name+";ADR:"+address+";TEL:"+phonenumber+";EMAIL:"+email+";;";
-  }
+  } else
+    if(ID==4)
+      toencode = "MECARD:N:"+name+";ADR:"+address+";TEL:"+phonenumber+";EMAIL:"+email+";;";
+    else
+      toencode = "MECARD:N:"+namework+";ADR:"+addresswork+";TEL:"+phonenumberwork+";EMAIL:"+emailwork+";;";
+
   //toencode = toencode.substring(0,130);
   if(toencode.length>=132){
     toencode = "Warning: Text is truncated, limit is 130 chars...";
@@ -61,7 +64,10 @@ function generateCode() {
     if(ID<4)
       msg.description = text[ID];
     else
-      msg.description = "Business card: "+name;
+      if(ID==4)
+        msg.description = "Private Business Card: "+name;
+      else
+        msg.description = "Work Business Card: "+name;
   }
   msg.id = ID;
   Pebble.sendAppMessage(msg);
@@ -83,13 +89,20 @@ Pebble.addEventListener("ready",
                         address = localStorage.getItem("address");
                         phonenumber = localStorage.getItem("phonenumber");
                         email = localStorage.getItem("email");
-                        if (!(name||text[0])) {
+                        namework = localStorage.getItem("namework");
+                        addresswork = localStorage.getItem("addresswork");
+                        phonenumberwork = localStorage.getItem("phonenumberwork");
+                        emailwork = localStorage.getItem("emailwork");
+                        if (!(name||text[0]||namework)) {
                             text = defaultText;
                             name = defaultName;
-                            text = defaultText;
                             address = defailtAddress;
                             phonenumber = defaultPhonenumber;
                             email = defaultEmail;
+                            namework = defaultName;
+                            addresswork = defailtAddress;
+                            phonenumberwork = defaultPhonenumber;
+                            emailwork = defaultEmail;
                           }
                           generateCode();
                         });
@@ -105,11 +118,13 @@ Pebble.addEventListener("appmessage",
                         });
 
 Pebble.addEventListener('showConfiguration', function(e) {
-                        var uri = 'http://musikkapelle-hollenegg.at/images/configuration_qr_new.html?' +
+                        var uri = 'http://musikkapelle-hollenegg.at/images/configuration_qr_dual.html?' +
                         'text=' + encodeURIComponent(text[0])+'&text2=' + encodeURIComponent(text[1])+
                         '&text3=' + encodeURIComponent(text[2])+'&text4=' + encodeURIComponent(text[3])+
                         '&name=' + encodeURIComponent(name)+'&address=' + encodeURIComponent(address)+
-                        '&phonenumber=' + encodeURIComponent(phonenumber)+'&email=' + encodeURIComponent(email);
+                        '&phonenumber=' + encodeURIComponent(phonenumber)+'&email=' + encodeURIComponent(email)+
+                        '&namework=' + encodeURIComponent(namework)+'&addresswork=' + encodeURIComponent(addresswork)+
+                        '&phonenumberwork=' + encodeURIComponent(phonenumberwork)+'&emailwork=' + encodeURIComponent(emailwork);
                         //console.log('showing configuration at uri: ' + uri);
                         Pebble.openURL(uri);
                         });
@@ -128,6 +143,10 @@ Pebble.addEventListener('webviewclosed', function(e) {
                         name = options['name'];
                         phonenumber = options['phonenumber'];
                         email = options['email'];
+                        addresswork = options['addresswork'];
+                        namework = options['namework'];
+                        phonenumberwork = options['phonenumberwork'];
+                        emailwork = options['emailwork'];
                         //console.log("New option:")
                         localStorage.setItem('text', text[0]);
                         localStorage.setItem('text1', text[1]);
@@ -137,6 +156,10 @@ Pebble.addEventListener('webviewclosed', function(e) {
                         localStorage.setItem('address',address);
                         localStorage.setItem('phonenumber',phonenumber);
                         localStorage.setItem('email',email);
+                        localStorage.setItem('namework',namework);
+                        localStorage.setItem('addresswork',addresswork);
+                        localStorage.setItem('phonenumberwork',phonenumberwork);
+                        localStorage.setItem('emailwork',emailwork);
                         generateCode();
                         
                         } else {
