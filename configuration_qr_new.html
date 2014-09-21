@@ -12,13 +12,35 @@
 		</style>
 	</head>
 	<body>
-		<div data-role='page' id='main'>
-			<div data-role='header' class='jqm-header'>
+		<div data-role='page' id='main' data-theme='c'>
+			<div data-role='header' class='jqm-header' data-theme='c'>
 				<h1>QR Code Generator Configuration</h1>
 			</div>
 
-			<div data-role='content'>
-
+			<div data-role='content' data-theme='c'>
+      <div class="ui-body ui-corner-all">
+      <h3>Business Card</h3>
+      The following fields can be used to create a QR code business card which can be interpreted by most QR reader apps
+      <div data-role="fieldcontain">
+      <label for="text">Name:</label>
+      <input type="text" name="name" id="name" value="" />
+      </div>
+      <div data-role="fieldcontain">
+      <label for="text">Address:</label>
+      <input type="text" name="address" id="address" value="" />
+      </div>
+      <div data-role="fieldcontain">
+      <label for="text">Phone Number:</label>
+      <input type="text" name="phonenumber" id="phonenumber" value="" />
+      </div>
+      <div data-role="fieldcontain">
+      <label for="text">E-Mail Address:</label>
+      <input type="text" name="email" id="email" value="" />
+      </div>
+      </div>
+      <div class="ui-body ui-corner-all">
+      <h3>Custom Texts</h3>
+        Use the up/down buttons on your watch to cycle through the different texts.
 				<div data-role="fieldcontain">
 					<label for="text">Text to convert to a QR Code:</label>
 					<input type="text" name="text" id="text" value="" />
@@ -35,24 +57,9 @@
 					<label for="text">4th Text (optional):</label>
 					<input type="text" name="text4" id="text4" value="" />
 				</div>
-				Use the up/down buttons on your watch to cycle through the different texts. The following fields can be used to create a QR code business card which can be interpreted by most QR reader apps:
-				<div data-role="fieldcontain">
-					<label for="text">Name:</label>
-					<input type="text" name="name" id="name" value="" />
-				</div>
-				<div data-role="fieldcontain">
-					<label for="text">Address:</label>
-					<input type="text" name="address" id="address" value="" />
-				</div>
-				<div data-role="fieldcontain">
-					<label for="text">Phone Number:</label>
-					<input type="text" name="phonenumber" id="phonenumber" value="" />
-				</div>
-				<div data-role="fieldcontain">
-					<label for="text">E-Mail Address:</label>
-					<input type="text" name="email" id="email" value="" />
-				</div>
-				<div class='ui-body ui-body-b'>
+
+        </div>
+        <div class='ui-body ui-body-b'>
 					<fieldset class='ui-grid-a'>
 						<div class='ui-block-a'><button type='submit' data-theme='d' id='b-cancel'>Cancel</button></div>
 						<div class='ui-block-b'><button type='submit' data-theme='a' id='b-submit'>Submit</button></div>

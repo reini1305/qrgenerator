@@ -83,7 +83,7 @@ Pebble.addEventListener("ready",
                         address = localStorage.getItem("address");
                         phonenumber = localStorage.getItem("phonenumber");
                         email = localStorage.getItem("email");
-                          if (!name) {
+                        if (!(name||text[0])) {
                             text = defaultText;
                             name = defaultName;
                             text = defaultText;
