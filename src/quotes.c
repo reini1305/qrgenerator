@@ -12,6 +12,7 @@ static PropertyAnimation *animation=NULL;
 static bool animation_finished=true;
 //static AppTimer *descr_timer;
 static int id=4;
+static bool is_empty[6]={false,false,false,false,false,false};
 
 enum {
   QUOTE_KEY_QRCODE = 0x0,
@@ -47,10 +48,26 @@ static void animate_layer_bounds(Layer* layer, GRect toRect)
   animation_schedule((Animation*)animation);
 }
 
+static void light_off(void *data)
+{
+  light_enable(false);
+}
+
+static void enable_light(void)
+{
+  light_enable(true);
+  if(!app_timer_reschedule(light_timer,10000))
+    light_timer = app_timer_register(10000,light_off,NULL);
+}
+
 void show_description(char* new_text)
 {
-  strncpy(description_text, new_text, TEXT_LENGTH-1);
+  if(id<4)
+    snprintf(description_text,sizeof(description_text),"%d/4: %s",id+1,new_text);
+  else
+    strncpy(description_text, new_text, TEXT_LENGTH-1);
   //text_layer_set_text(description_layer,new_text);
+  enable_light();
   // Scroll to the right
   GRect current_size = layer_get_frame(text_layer_get_layer(description_layer));
   GSize new_size = text_layer_get_content_size(description_layer);
@@ -80,21 +97,8 @@ static bool send_to_phone_multi(int quote_key, int symbol) {
   layer_set_hidden(text_layer_get_layer(description_layer), true);
 }*/
 
-static void light_off(void *data)
-{
-  light_enable(false);
-}
-
-static void enable_light(void)
-{
-  light_enable(true);
-  if(!app_timer_reschedule(light_timer,10000))
-    light_timer = app_timer_register(10000,light_off,NULL);
-}
-
 static void description_click_handler(ClickRecognizerRef recognizer, void *context) {
   show_description(description_text);
-  enable_light();
 }
 
 static void previous_click_handler(ClickRecognizerRef recognizer, void *context) {
@@ -120,6 +124,10 @@ static void in_received_handler(DictionaryIterator *iter, void *context) {
   Tuple *descr_tuple = dict_find(iter, QUOTE_KEY_DESCRIPTION);
   if(descr_tuple)
   {
+    if(descr_tuple->length<2)
+      is_empty[id]=true;
+    else
+      is_empty[id]=false;
     show_description(descr_tuple->value->cstring);
   }
   /*Tuple *id_tuple = dict_find(iter,QUOTE_KEY_ID);
@@ -157,25 +165,33 @@ static int my_sqrt(int value)
 static void qr_layer_draw(Layer *layer, GContext *ctx)
 {
   if(qr_tuple){
-    enable_light();
-    int code_length = my_sqrt(qr_tuple->length);
-    //APP_LOG(APP_LOG_LEVEL_DEBUG,"Code Length: %d",code_length);
-    GRect bounds = layer_get_bounds(layer);
-    int pixel_size = bounds.size.w/code_length;
-    int width = pixel_size*code_length;
-    int offset_x = (bounds.size.w-width)/2;
-    //APP_LOG(APP_LOG_LEVEL_DEBUG,"Pixel Size: %d",pixel_size);
-    GRect current_pixel = GRect(0, 0, pixel_size,pixel_size);
-    graphics_context_set_fill_color(ctx, GColorBlack);
-    for (int i=0;i<code_length;i++)
+    if(is_empty[id])
     {
-      for (int j=0;j<code_length;j++)
+      id++;
+      send_to_phone_multi(QUOTE_KEY_FETCH,id+1);
+    }
+    else
+    {
+      enable_light();
+      int code_length = my_sqrt(qr_tuple->length);
+      //APP_LOG(APP_LOG_LEVEL_DEBUG,"Code Length: %d",code_length);
+      GRect bounds = layer_get_bounds(layer);
+      int pixel_size = bounds.size.w/code_length;
+      int width = pixel_size*code_length;
+      int offset_x = (bounds.size.w-width)/2;
+      //APP_LOG(APP_LOG_LEVEL_DEBUG,"Pixel Size: %d",pixel_size);
+      GRect current_pixel = GRect(0, 0, pixel_size,pixel_size);
+      graphics_context_set_fill_color(ctx, GColorBlack);
+      for (int i=0;i<code_length;i++)
       {
-        if(qr_tuple->value->cstring[i*code_length+j]==1)
+        for (int j=0;j<code_length;j++)
         {
-          current_pixel.origin.x = j*pixel_size+offset_x;
-          current_pixel.origin.y = i*pixel_size+offset_x;
-          graphics_fill_rect(ctx, current_pixel,0,GCornerNone);
+          if(qr_tuple->value->cstring[i*code_length+j]==1)
+          {
+            current_pixel.origin.x = j*pixel_size+offset_x;
+            current_pixel.origin.y = i*pixel_size+offset_x;
+            graphics_fill_rect(ctx, current_pixel,0,GCornerNone);
+          }
         }
       }
     }
