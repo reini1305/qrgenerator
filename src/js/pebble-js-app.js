@@ -76,8 +76,8 @@ function generateCode() {
 // Set callback for the app ready event
 Pebble.addEventListener("ready",
                         function(e) {
-                          console.log("connect! " + e.ready);
-                          console.log(e.type);
+                          //console.log("connect! " + e.ready);
+                          //console.log(e.type);
                           // Fetch saved symbol from local storage (using
                           // standard localStorage webAPI)
                         //localStorage.clear();
@@ -104,7 +104,11 @@ Pebble.addEventListener("ready",
                             phonenumberwork = defaultPhonenumber;
                             emailwork = defaultEmail;
                           }
-                          generateCode();
+                        var msg = {};
+                        msg.id=100;
+                        Pebble.sendAppMessage(msg);
+                        //console.log("sent ready signal");
+                          //generateCode();
                         });
 
 // Set callback for appmessage events

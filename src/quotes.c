@@ -1,6 +1,7 @@
 #include <pebble.h>
 
 #define TEXT_LENGTH 128
+#define LAST_ID_KEY 1
 
 static Window *window;
 static Layer *qr_layer;
@@ -8,10 +9,14 @@ static Tuple *qr_tuple;
 static TextLayer *description_layer;
 static char description_text[TEXT_LENGTH];
 static AppTimer *light_timer;
+static AppTimer *query_timer;
 static PropertyAnimation *animation=NULL;
 static bool animation_finished=true;
 //static AppTimer *descr_timer;
-static int id=4;
+static int id;
+static bool connected=true;
+static bool first=true;
+static GBitmap *bluetooth_bitmap;
 static bool is_empty[6]={false,false,false,false,false,false};
 
 enum {
@@ -92,6 +97,11 @@ static bool send_to_phone_multi(int quote_key, int symbol) {
   return true;
 }
 
+static void send_query(void* data)
+{
+  send_to_phone_multi(QUOTE_KEY_FETCH, id+1);
+}
+
 /*static void hide_layer(void *data)
 {
   layer_set_hidden(text_layer_get_layer(description_layer), true);
@@ -115,6 +125,14 @@ static void next_click_handler(ClickRecognizerRef recognizer, void *context) {
 }
 
 static void in_received_handler(DictionaryIterator *iter, void *context) {
+  //APP_LOG(APP_LOG_LEVEL_DEBUG,"Got something");
+  if(first)
+  {
+    first = false;
+    //APP_LOG(APP_LOG_LEVEL_DEBUG,"Request data");
+    // Send query again in one second
+    query_timer=app_timer_register(100,send_query,NULL);
+  }
   qr_tuple = dict_find(iter, QUOTE_KEY_QRCODE);
   if (qr_tuple) {
     //APP_LOG(APP_LOG_LEVEL_DEBUG,"Length of String: %d",qr_tuple->length);
@@ -164,7 +182,11 @@ static int my_sqrt(int value)
 
 static void qr_layer_draw(Layer *layer, GContext *ctx)
 {
-  if(qr_tuple){
+  if(!connected)
+  {
+    graphics_draw_bitmap_in_rect(ctx, bluetooth_bitmap, layer_get_bounds(layer));
+  }
+  else if(qr_tuple){
     if(is_empty[id])
     {
       id++;
@@ -205,6 +227,21 @@ static void window_click_config_provider(void *context) {
   window_single_repeating_click_subscribe(BUTTON_ID_SELECT, repeat_interval_ms, (ClickHandler) description_click_handler);
 }
 
+static void handle_bluetooth(bool connection)
+{
+  if(!connection)
+  {
+    vibes_double_pulse();
+    show_description("No phone connection");
+  }
+  else
+  {
+    show_description("Press Up/Down to refresh");
+  }
+  connected=connection;
+  layer_mark_dirty(qr_layer);
+}
+
 static void window_load(Window *window) {
   window_set_click_config_provider(window,window_click_config_provider);
   Layer *window_layer = window_get_root_layer(window);
@@ -217,6 +254,10 @@ static void window_load(Window *window) {
   qr_layer = layer_create(bounds);
   layer_add_child(window_layer, qr_layer);
   layer_set_update_proc(qr_layer, qr_layer_draw);
+  
+  // Handle bluetooth connection
+  bluetooth_bitmap = gbitmap_create_with_resource(RESOURCE_ID_IMAGE_ATTENTION);
+  bluetooth_connection_service_subscribe(handle_bluetooth);
   
   layer_set_clips(window_layer,false);
   description_layer = text_layer_create(GRect(0, 144, 5*144, 24));
@@ -231,12 +272,15 @@ static void window_load(Window *window) {
   
   enable_light();
   
-  send_to_phone_multi(QUOTE_KEY_FETCH,id+1);
+  
+  //send_to_phone_multi(QUOTE_KEY_FETCH,id+1);
 }
 
 static void window_unload(Window *window) {
   layer_destroy(qr_layer);
   layer_destroy(text_layer_get_layer(description_layer));
+  bluetooth_connection_service_unsubscribe();
+  gbitmap_destroy(bluetooth_bitmap);
   light_enable(false);
 }
 
@@ -262,6 +306,11 @@ static void init(void) {
     .load = window_load,
     .unload = window_unload,
   });
+  
+  if(persist_exists(LAST_ID_KEY))
+    id = persist_read_int(LAST_ID_KEY);
+  else
+    id = 4;
 
   window_set_fullscreen(window,true);
   const bool animated = true;
@@ -271,6 +320,7 @@ static void init(void) {
 static void deinit(void) {
   window_destroy(window);
   accel_tap_service_unsubscribe();
+  persist_write_int(LAST_ID_KEY,id);
 }
 
 int main(void) {
