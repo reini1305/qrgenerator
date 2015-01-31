@@ -122,7 +122,7 @@ Pebble.addEventListener("appmessage",
                         });
 
 Pebble.addEventListener('showConfiguration', function(e) {
-                        var uri = 'http://musikkapelle-hollenegg.at/images/configuration_qr_dual.html?' +
+                        var uri = 'http://reini1305.github.io/configuration/configuration_qr_dual.html?' +
                         'text=' + encodeURIComponent(text[0])+'&text2=' + encodeURIComponent(text[1])+
                         '&text3=' + encodeURIComponent(text[2])+'&text4=' + encodeURIComponent(text[3])+
                         '&name=' + encodeURIComponent(name)+'&address=' + encodeURIComponent(address)+
