@@ -5,11 +5,11 @@ var qrencode=function(){var a=function(){function a(a,b){this.type=a,this.msg=b}
 
 
 // We use the fake "PBL" symbol as default
-var defaultText = ["Welcome", "to", "QR code", "generator"];
-var defaultName = "Jon Doe";
-var defailtAddress = "Example Street 12, 12345 City";
-var defaultPhonenumber = "+9255558888";
-var defaultEmail = "example@example.com";
+var defaultText = ["", "", "", ""];
+var defaultName = "";
+var defailtAddress = "";
+var defaultPhonenumber = "";
+var defaultEmail = "";
 var defaultID = 4;
 var ID = defaultID;
 var name = defaultName;
@@ -67,7 +67,7 @@ function generateCode() {
       if(ID==4)
         msg.description = "Private Business Card: "+name;
       else
-        msg.description = "Work Business Card: "+name;
+        msg.description = "Work Business Card: "+namework;
   }
   msg.id = ID;
   Pebble.sendAppMessage(msg);

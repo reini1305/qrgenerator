@@ -3,8 +3,8 @@
   "shortName": "QR Generator",
   "longName": "QR Generator",
   "companyName": "Christian Reinbacher",
-  "versionCode": 18,
-  "versionLabel": "1.12",
+  "versionCode": 19,
+  "versionLabel": "1.13",
   "capabilities": [ "configurable" ],
   "watchapp": {
     "watchface": false

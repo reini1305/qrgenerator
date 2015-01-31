@@ -16,6 +16,7 @@ static bool animation_finished=true;
 static int id;
 static bool connected=true;
 static bool first=true;
+static bool hidden=false;
 static GBitmap *bluetooth_bitmap;
 static bool is_empty[6]={false,false,false,false,false,false};
 
@@ -111,6 +112,11 @@ static void description_click_handler(ClickRecognizerRef recognizer, void *conte
   show_description(description_text);
 }
 
+static void toggle_click_handler(ClickRecognizerRef recognizer, void *context) {
+  hidden=!hidden;
+  layer_set_hidden(text_layer_get_layer(description_layer), hidden);
+}
+
 static void previous_click_handler(ClickRecognizerRef recognizer, void *context) {
   id--;
   if(id<0)
@@ -190,7 +196,9 @@ static void qr_layer_draw(Layer *layer, GContext *ctx)
     if(is_empty[id])
     {
       id++;
-      send_to_phone_multi(QUOTE_KEY_FETCH,id+1);
+      //send_to_phone_multi(QUOTE_KEY_FETCH,id+1);
+      if(!app_timer_reschedule(query_timer,100))
+        query_timer=app_timer_register(100,send_query,NULL);
     }
     else
     {
@@ -222,9 +230,10 @@ static void qr_layer_draw(Layer *layer, GContext *ctx)
 
 static void window_click_config_provider(void *context) {
   const uint16_t repeat_interval_ms = 1000;
-  window_single_repeating_click_subscribe(BUTTON_ID_UP, repeat_interval_ms, (ClickHandler) previous_click_handler);
-  window_single_repeating_click_subscribe(BUTTON_ID_DOWN, repeat_interval_ms, (ClickHandler) next_click_handler);
-  window_single_repeating_click_subscribe(BUTTON_ID_SELECT, repeat_interval_ms, (ClickHandler) description_click_handler);
+  window_single_click_subscribe(BUTTON_ID_UP, (ClickHandler) previous_click_handler);
+  window_single_click_subscribe(BUTTON_ID_DOWN, (ClickHandler) next_click_handler);
+  window_single_click_subscribe(BUTTON_ID_SELECT, (ClickHandler) description_click_handler);
+  window_long_click_subscribe(BUTTON_ID_SELECT, repeat_interval_ms, (ClickHandler) toggle_click_handler, NULL);
 }
 
 static void handle_bluetooth(bool connection)
