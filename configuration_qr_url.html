@@ -1,0 +1,153 @@
+<!DOCTYPE html>
+<html>
+	<head>
+		<title>Simply MBK Configuration</title>
+		<meta charset='utf-8'>
+		<meta name='viewport' content='width=device-width, initial-scale=1'>
+		<link rel='stylesheet' href='https://code.jquery.com/mobile/1.3.2/jquery.mobile-1.3.2.min.css' />
+		<script src='https://code.jquery.com/jquery-1.9.1.min.js'></script>
+		<script src='https://code.jquery.com/mobile/1.3.2/jquery.mobile-1.3.2.min.js'></script>
+		<style>
+			.ui-header .ui-title { margin-left: 1em; margin-right: 1em; text-overflow: clip; }
+		</style>
+	</head>
+	<body>
+		<div data-role='page' id='main' data-theme='c'>
+			<div data-role='header' class='jqm-header' data-theme='c'>
+				<h1>QR Code Generator Configuration</h1>
+			</div>
+
+			<div data-role='content' data-theme='c'>
+      <div class="ui-body ui-corner-all" data-role='collapsible'>
+      <h3>Private Business Card</h3>
+      The following fields can be used to create a QR code business card which can be interpreted by most QR reader apps
+      <div data-role="fieldcontain">
+      <label for="text">Name:</label>
+      <input type="text" name="name" id="name" value="" />
+      </div>
+      <div data-role="fieldcontain">
+      <label for="text">Address:</label>
+      <input type="text" name="address" id="address" value="" />
+      </div>
+      <div data-role="fieldcontain">
+      <label for="text">Phone Number:</label>
+      <input type="tel" name="phonenumber" id="phonenumber" value="" />
+      </div>
+      <div data-role="fieldcontain">
+      <label for="text">E-Mail Address:</label>
+      <input type="email" name="email" id="email" value="" />
+      </div>
+      </div>
+      <div class="ui-body ui-corner-all" data-role='collapsible'>
+      <h3>Work Business Card</h3>
+      The following fields can be used to create a QR code business card which can be interpreted by most QR reader apps
+      <div data-role="fieldcontain">
+      <label for="text">Name:</label>
+      <input type="text" name="namework" id="namework" value="" />
+      </div>
+      <div data-role="fieldcontain">
+      <label for="text">Address:</label>
+      <input type="text" name="addresswork" id="addresswork" value="" />
+      </div>
+      <div data-role="fieldcontain">
+      <label for="text">Phone Number:</label>
+      <input type="tel" name="phonenumberwork" id="phonenumberwork" value="" />
+      </div>
+      <div data-role="fieldcontain">
+      <label for="text">E-Mail Address:</label>
+      <input type="email" name="emailwork" id="emailwork" value="" />
+      </div>
+      <div data-role="fieldcontain">
+      <label for="text">Website:</label>
+      <input type="text" name="url" id="url" value="" />
+      </div>
+      </div>
+      <div class="ui-body ui-corner-all" data-role='collapsible'>
+      <h3>Custom Texts</h3>
+        Use the up/down buttons on your watch to cycle through the different texts.
+				<div data-role="fieldcontain">
+					<label for="text">Text to convert to a QR Code:</label>
+					<input type="text" name="text" id="text" value="" />
+				</div>
+				<div data-role="fieldcontain">
+					<label for="text">2nd Text (optional):</label>
+					<input type="text" name="text2" id="text2" value="" />
+				</div>
+				<div data-role="fieldcontain">
+					<label for="text">3rd Text (optional):</label>
+					<input type="text" name="text3" id="text3" value="" />
+				</div>
+				<div data-role="fieldcontain">
+					<label for="text">4th Text (optional):</label>
+					<input type="text" name="text4" id="text4" value="" />
+				</div>
+
+      </div>
+      <div class="ui-body ui-corner-all" data-role='collapsible'>
+      <h3>Donation</h3>
+      If you like this app consider a small donation: <a href='https://pledgie.com/campaigns/28156'><img alt='Click here to lend your support to: Christian Reinbachers Pebble Apps and make a donation at pledgie.com !' src='https://pledgie.com/campaigns/28156.png?skin_name=chrome' border='0' ></a>
+      </div>
+        <div class='ui-body ui-body-b'>
+					<fieldset class='ui-grid-a'>
+						<div class='ui-block-a'><button type='submit' data-theme='d' id='b-cancel'>Cancel</button></div>
+						<div class='ui-block-b'><button type='submit' data-theme='a' id='b-submit'>Submit</button></div>
+					</fieldset>
+				</div>
+
+			</div>
+		</div>
+		<script>
+			function getQueryVariable(variable) {
+				var query = location.search.substring(1);
+				var vars = query.split('&');
+				for (var i=0;i<vars.length;i++) {
+					var pair = vars[i].split('=');
+					if (pair[0] == variable)
+						return decodeURIComponent(pair[1]);
+				}
+				return '';
+			}
+
+			function saveOptions() {
+				var options = {
+					'text': $('#text').val(),
+					'text2': $('#text2').val(),
+					'text3': $('#text3').val(),
+					'text4': $('#text4').val(),
+					'name': $('#name').val(),
+					'address': $('#address').val(),
+					'phonenumber': $('#phonenumber').val(),
+					'email': $('#email').val(),
+          'namework': $('#namework').val(),
+          'addresswork': $('#addresswork').val(),
+          'phonenumberwork': $('#phonenumberwork').val(),
+          'emailwork': $('#emailwork').val(),
+          'url': $('#url').val(),
+				}
+				return options;
+			}
+
+			$().ready(function() {
+				$('#b-cancel').click(function() {
+					document.location = 'pebblejs://close#';
+				});
+				$('#b-submit').click(function() {
+					document.location = 'pebblejs://close#' + escape(encodeURIComponent(JSON.stringify(saveOptions())));
+				});
+				$('#text').val(getQueryVariable('text'));
+				$('#text2').val(getQueryVariable('text2'));
+				$('#text3').val(getQueryVariable('text3'));
+				$('#text4').val(getQueryVariable('text4'));
+				$('#name').val(getQueryVariable('name'));
+				$('#address').val(getQueryVariable('address'));
+				$('#phonenumber').val(getQueryVariable('phonenumber'));
+				$('#email').val(getQueryVariable('email'));
+        $('#namework').val(getQueryVariable('namework'));
+        $('#addresswork').val(getQueryVariable('addresswork'));
+        $('#phonenumberwork').val(getQueryVariable('phonenumberwork'));
+        $('#emailwork').val(getQueryVariable('emailwork'));
+        $('#url').val(getQueryVariable('url'));
+			});
+		</script>
+	</body>
+</html>

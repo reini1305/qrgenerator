@@ -10,6 +10,7 @@ var defaultName = "";
 var defailtAddress = "";
 var defaultPhonenumber = "";
 var defaultEmail = "";
+var defaultUrl = "";
 var defaultID = 4;
 var ID = defaultID;
 var name = defaultName;
@@ -17,7 +18,7 @@ var text = defaultText;
 var address = defailtAddress;
 var phonenumber = defaultPhonenumber;
 var email = defaultEmail;
-
+var url = defaultUrl;
 
 function generateCode() {
   var response;
@@ -32,7 +33,7 @@ function generateCode() {
     if(ID==4)
       toencode = "MECARD:N:"+name+";ADR:"+address+";TEL:"+phonenumber+";EMAIL:"+email+";;";
     else
-      toencode = "MECARD:N:"+namework+";ADR:"+addresswork+";TEL:"+phonenumberwork+";EMAIL:"+emailwork+";;";
+      toencode = "MECARD:N:"+namework+";ADR:"+addresswork+";TEL:"+phonenumberwork+";EMAIL:"+emailwork+";URL:"+url+";;";
 
   //toencode = toencode.substring(0,130);
   if(toencode.length>=132){
@@ -93,6 +94,10 @@ Pebble.addEventListener("ready",
                         addresswork = localStorage.getItem("addresswork");
                         phonenumberwork = localStorage.getItem("phonenumberwork");
                         emailwork = localStorage.getItem("emailwork");
+                        url = localStorage.getItem("url");
+                        if(!url){
+                          url=defaultUrl;
+                        }
                         if (!(name||text[0]||namework)) {
                             text = defaultText;
                             name = defaultName;
@@ -103,6 +108,7 @@ Pebble.addEventListener("ready",
                             addresswork = defailtAddress;
                             phonenumberwork = defaultPhonenumber;
                             emailwork = defaultEmail;
+                            url = defaultUrl;
                           }
                         var msg = {};
                         msg.id=100;
@@ -122,13 +128,14 @@ Pebble.addEventListener("appmessage",
                         });
 
 Pebble.addEventListener('showConfiguration', function(e) {
-                        var uri = 'http://reini1305.github.io/configuration/configuration_qr_dual.html?' +
+                        var uri = 'http://reini1305.github.io/configuration/configuration_qr_url.html?' +
                         'text=' + encodeURIComponent(text[0])+'&text2=' + encodeURIComponent(text[1])+
                         '&text3=' + encodeURIComponent(text[2])+'&text4=' + encodeURIComponent(text[3])+
                         '&name=' + encodeURIComponent(name)+'&address=' + encodeURIComponent(address)+
                         '&phonenumber=' + encodeURIComponent(phonenumber)+'&email=' + encodeURIComponent(email)+
                         '&namework=' + encodeURIComponent(namework)+'&addresswork=' + encodeURIComponent(addresswork)+
-                        '&phonenumberwork=' + encodeURIComponent(phonenumberwork)+'&emailwork=' + encodeURIComponent(emailwork);
+                        '&phonenumberwork=' + encodeURIComponent(phonenumberwork)+'&emailwork=' + encodeURIComponent(emailwork)+
+                        '&url=' + encodeURIComponent(url);
                         //console.log('showing configuration at uri: ' + uri);
                         Pebble.openURL(uri);
                         });
@@ -151,6 +158,7 @@ Pebble.addEventListener('webviewclosed', function(e) {
                         namework = options['namework'];
                         phonenumberwork = options['phonenumberwork'];
                         emailwork = options['emailwork'];
+                        url = options['url'];
                         //console.log("New option:")
                         localStorage.setItem('text', text[0]);
                         localStorage.setItem('text1', text[1]);
@@ -164,6 +172,7 @@ Pebble.addEventListener('webviewclosed', function(e) {
                         localStorage.setItem('addresswork',addresswork);
                         localStorage.setItem('phonenumberwork',phonenumberwork);
                         localStorage.setItem('emailwork',emailwork);
+                        localStorage.setItem('url',url);
                         generateCode();
                         
                         } else {
