@@ -5,7 +5,9 @@
   "companyName": "Christian Reinbacher",
   "versionCode": 21,
   "versionLabel": "1.15",
-  "capabilities": [ "configurable" ],
+  "capabilities": [
+    "configurable"
+  ],
   "watchapp": {
     "watchface": false
   },
@@ -17,17 +19,22 @@
   },
   "resources": {
     "media": [
-              {
-              "menuIcon": true,
-              "type": "png",
-              "name": "IMAGE_MENU_ICON",
-              "file": "images/logo.png"
-              },
-              {
-              "type": "png",
-              "name": "IMAGE_ATTENTION",
-              "file": "images/attention.png"
-              }
-              ]
-  }
+      {
+        "menuIcon": true,
+        "type": "png",
+        "name": "IMAGE_MENU_ICON",
+        "file": "images/logo.png"
+      },
+      {
+        "type": "png",
+        "name": "IMAGE_ATTENTION",
+        "file": "images/attention.png"
+      }
+    ]
+  },
+  "targetPlatforms": [
+    "aplite",
+    "basalt"
+  ],
+  "sdkVersion": "3"
 }
