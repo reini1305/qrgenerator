@@ -3,8 +3,8 @@
   "shortName": "QR Generator",
   "longName": "QR Generator",
   "companyName": "Christian Reinbacher",
-  "versionCode": 21,
-  "versionLabel": "1.15",
+  "versionCode": 22,
+  "versionLabel": "1.16",
   "capabilities": [
     "configurable"
   ],

@@ -264,10 +264,6 @@ static void window_load(Window *window) {
   layer_add_child(window_layer, qr_layer);
   layer_set_update_proc(qr_layer, qr_layer_draw);
   
-  // Handle bluetooth connection
-  bluetooth_bitmap = gbitmap_create_with_resource(RESOURCE_ID_IMAGE_ATTENTION);
-  bluetooth_connection_service_subscribe(handle_bluetooth);
-  
   layer_set_clips(window_layer,false);
   description_layer = text_layer_create(GRect(0, 144, 5*144, 24));
   layer_set_clips(text_layer_get_layer(description_layer),false);
@@ -280,6 +276,10 @@ static void window_load(Window *window) {
   layer_add_child(window_layer, text_layer_get_layer(description_layer));
   
   enable_light();
+  // Handle bluetooth connection
+  bluetooth_bitmap = gbitmap_create_with_resource(RESOURCE_ID_IMAGE_ATTENTION);
+  bluetooth_connection_service_subscribe(handle_bluetooth);
+  handle_bluetooth(bluetooth_connection_service_peek());
   
   
   //send_to_phone_multi(QUOTE_KEY_FETCH,id+1);
@@ -320,8 +320,9 @@ static void init(void) {
     id = persist_read_int(LAST_ID_KEY);
   else
     id = 4;
-
+#ifdef PBL_SDK_2
   window_set_fullscreen(window,true);
+#endif
   const bool animated = true;
   window_stack_push(window, animated);
 }
