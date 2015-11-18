@@ -3,8 +3,8 @@
   "shortName": "QR Generator",
   "longName": "QR Generator",
   "companyName": "Christian Reinbacher",
-  "versionCode": 22,
-  "versionLabel": "1.16",
+  "versionCode": 23,
+  "versionLabel": "1.17",
   "capabilities": [
     "configurable"
   ],
@@ -34,7 +34,8 @@
   },
   "targetPlatforms": [
     "aplite",
-    "basalt"
+    "basalt",
+    "chalk"
   ],
   "sdkVersion": "3"
 }

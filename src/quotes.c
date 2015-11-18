@@ -1,6 +1,6 @@
 #include <pebble.h>
 
-#define TEXT_LENGTH 128
+#define TEXT_LENGTH 256
 #define LAST_ID_KEY 1
 
 static Window *window;
@@ -19,6 +19,13 @@ static bool first=true;
 static bool hidden=false;
 static GBitmap *bluetooth_bitmap;
 static bool is_empty[6]={false,false,false,false,false,false};
+#ifdef PBL_ROUND
+#define TEXT_OFFSET_Y 90
+#define SCREEN_WIDTH 180
+#else
+#define TEXT_OFFSET_Y 144
+#define SCREEN_WIDTH 144
+#endif
 
 enum {
   QUOTE_KEY_QRCODE = 0x0,
@@ -28,9 +35,14 @@ enum {
 };
 
 static void animation_stopped(PropertyAnimation *animation, bool finished, void *data) {
+#ifdef PBL_SDK_2  
   property_animation_destroy(animation);
+#endif
   animation_finished=true;
-  layer_set_frame(text_layer_get_layer(description_layer),GRect(0, 144, 5*144, 24));
+  layer_set_frame(text_layer_get_layer(description_layer),GRect(0, TEXT_OFFSET_Y, 5*SCREEN_WIDTH, 24));
+#ifdef PBL_ROUND
+  layer_set_hidden(text_layer_get_layer(description_layer), true);
+#endif
 }
 
 static void animate_layer_bounds(Layer* layer, GRect toRect)
@@ -41,7 +53,7 @@ static void animate_layer_bounds(Layer* layer, GRect toRect)
     animation_unschedule((Animation*)animation);
     //property_animation_destroy(animation);
     animation_finished=true;
-    layer_set_frame(text_layer_get_layer(description_layer),GRect(0, 144, 5*144, 24));
+    layer_set_frame(text_layer_get_layer(description_layer),GRect(0, TEXT_OFFSET_Y, 5*SCREEN_WIDTH, 24));
   }
   animation = property_animation_create_layer_frame(layer, NULL, &toRect);
   animation_set_handlers((Animation*) animation, (AnimationHandlers) {
@@ -66,19 +78,33 @@ static void enable_light(void)
     light_timer = app_timer_register(10000,light_off,NULL);
 }
 
-void show_description(char* new_text)
+void animate_description(void)
 {
-  if(id<4)
-    snprintf(description_text,sizeof(description_text),"%d/4: %s",id+1,new_text);
-  else
-    strncpy(description_text, new_text, TEXT_LENGTH-1);
-  //text_layer_set_text(description_layer,new_text);
+#ifdef PBL_ROUND
+  layer_set_hidden(text_layer_get_layer(description_layer), false);
+#endif
   enable_light();
   // Scroll to the right
   GRect current_size = layer_get_frame(text_layer_get_layer(description_layer));
   GSize new_size = text_layer_get_content_size(description_layer);
-  animate_layer_bounds(text_layer_get_layer(description_layer), GRect(current_size.origin.x-(new_size.w<144?144:new_size.w)+144,current_size.origin.y,
-                                                                      5*144,current_size.size.h));
+  animate_layer_bounds(text_layer_get_layer(description_layer), GRect(current_size.origin.x-(new_size.w<SCREEN_WIDTH?SCREEN_WIDTH:new_size.w)+SCREEN_WIDTH,current_size.origin.y,
+                                                                      5*SCREEN_WIDTH,current_size.size.h));
+}
+
+void show_description(char* new_text)
+{
+#ifdef PBL_ROUND
+  if(id<4)
+    snprintf(description_text,sizeof(description_text),"     %d/4: %s",id+1,new_text);
+  else
+    snprintf(description_text,sizeof(description_text),"     %s",new_text);
+#else
+  if(id<4)
+    snprintf(description_text,sizeof(description_text),"%d/4: %s",id+1,new_text);
+  else
+    strncpy(description_text, new_text, TEXT_LENGTH-1);
+#endif
+  animate_description();
 }
 
 static bool send_to_phone_multi(int quote_key, int symbol) {
@@ -109,12 +135,14 @@ static void send_query(void* data)
 }*/
 
 static void description_click_handler(ClickRecognizerRef recognizer, void *context) {
-  show_description(description_text);
+  animate_description();
 }
 
 static void toggle_click_handler(ClickRecognizerRef recognizer, void *context) {
+#ifndef PBL_ROUND
   hidden=!hidden;
   layer_set_hidden(text_layer_get_layer(description_layer), hidden);
+#endif
 }
 
 static void previous_click_handler(ClickRecognizerRef recognizer, void *context) {
@@ -255,7 +283,11 @@ static void window_load(Window *window) {
   window_set_click_config_provider(window,window_click_config_provider);
   Layer *window_layer = window_get_root_layer(window);
   GRect bounds = layer_get_bounds(window_layer);
+#ifdef PBL_ROUND
+  int offset = 28;
+#else
   int offset = 4;
+#endif
   bounds.origin.x = offset;
   bounds.origin.y = offset;
   bounds.size.h -= offset*2;
@@ -265,7 +297,7 @@ static void window_load(Window *window) {
   layer_set_update_proc(qr_layer, qr_layer_draw);
   
   layer_set_clips(window_layer,false);
-  description_layer = text_layer_create(GRect(0, 144, 5*144, 24));
+  description_layer = text_layer_create(GRect(0, TEXT_OFFSET_Y, 5*SCREEN_WIDTH, 24));
   layer_set_clips(text_layer_get_layer(description_layer),false);
   //text_layer_set_text_alignment(description_layer,GTextAlignmentCenter);
   text_layer_set_font(description_layer, fonts_get_system_font(FONT_KEY_GOTHIC_18));
