@@ -36,8 +36,8 @@ function generateCode() {
       toencode = "MECARD:N:"+namework+";ADR:"+addresswork+";TEL:"+phonenumberwork+";EMAIL:"+emailwork+";URL:"+url+";;";
 
   //toencode = toencode.substring(0,130);
-  if(toencode.length>=132){
-    toencode = "Warning: Text is truncated, limit is 130 chars...";
+  if(toencode.length>=232){
+    toencode = "Warning: Text is truncated, limit is 230 chars...";
     truncated = true;
   }
   else{

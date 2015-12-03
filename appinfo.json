@@ -26,7 +26,8 @@
         "file": "images/logo.png"
       },
       {
-        "type": "png",
+        "type": "bitmap",
+        "memoryFormat": "1Bit",
         "name": "IMAGE_ATTENTION",
         "file": "images/attention.png"
       }

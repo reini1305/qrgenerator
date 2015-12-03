@@ -199,7 +199,7 @@ static void app_message_init(void) {
   app_message_register_inbox_received(in_received_handler);
   app_message_register_inbox_dropped(in_dropped_handler);
   // Init buffers
-  app_message_open(app_message_inbox_size_maximum(), app_message_outbox_size_maximum());
+  app_message_open(app_message_inbox_size_maximum(), 100);
 }
 
 static int my_sqrt(int value)
@@ -352,9 +352,6 @@ static void init(void) {
     id = persist_read_int(LAST_ID_KEY);
   else
     id = 4;
-#ifdef PBL_SDK_2
-  window_set_fullscreen(window,true);
-#endif
   const bool animated = true;
   window_stack_push(window, animated);
 }
