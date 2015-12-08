@@ -35,9 +35,6 @@ enum {
 };
 
 static void animation_stopped(PropertyAnimation *animation, bool finished, void *data) {
-#ifdef PBL_SDK_2  
-  property_animation_destroy(animation);
-#endif
   animation_finished=true;
   layer_set_frame(text_layer_get_layer(description_layer),GRect(0, TEXT_OFFSET_Y, 5*SCREEN_WIDTH, 24));
 #ifdef PBL_ROUND
