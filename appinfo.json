@@ -3,8 +3,8 @@
   "shortName": "QR Generator",
   "longName": "QR Generator",
   "companyName": "Christian Reinbacher",
-  "versionCode": 24,
-  "versionLabel": "1.18",
+  "versionCode": 25,
+  "versionLabel": "1.19",
   "capabilities": [
     "configurable"
   ],
@@ -27,10 +27,9 @@
         "file": "images/logo.png"
       },
       {
-        "type": "bitmap",
-        "memoryFormat": "1Bit",
-        "name": "IMAGE_ATTENTION",
-        "file": "images/attention.png"
+      "type": "raw",
+      "name": "DISCONNECTED_IMAGE",
+      "file": "images/disconnected.pdc"
       }
     ]
   },

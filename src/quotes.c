@@ -17,7 +17,7 @@ static int id;
 static bool connected=true;
 static bool first=true;
 static bool hidden=false;
-static GBitmap *bluetooth_bitmap;
+static GDrawCommandImage *disconnect_image;
 static bool is_empty[6]={false,false,false,false,false,false};
 #ifdef PBL_ROUND
 #define TEXT_OFFSET_Y 90
@@ -213,9 +213,15 @@ static int my_sqrt(int value)
 
 static void qr_layer_draw(Layer *layer, GContext *ctx)
 {
+  GRect bounds = layer_get_bounds(layer);
   if(!connected)
   {
-    graphics_draw_bitmap_in_rect(ctx, bluetooth_bitmap, layer_get_bounds(layer));
+    // Image is 80 by 80, so we have to center it
+    GPoint origin;
+    origin.x=(bounds.size.w-80)/2;
+    origin.y=(bounds.size.h-80)/2;
+    gdraw_command_image_draw(ctx, disconnect_image, origin);
+    //graphics_draw_bitmap_in_rect(ctx, bluetooth_bitmap, layer_get_bounds(layer));
   }
   else if(qr_tuple){
     if(is_empty[id])
@@ -230,7 +236,6 @@ static void qr_layer_draw(Layer *layer, GContext *ctx)
       enable_light();
       int code_length = my_sqrt(qr_tuple->length);
       //APP_LOG(APP_LOG_LEVEL_DEBUG,"Code Length: %d",code_length);
-      GRect bounds = layer_get_bounds(layer);
       int pixel_size = bounds.size.w/code_length;
       int width = pixel_size*code_length;
       int offset_x = (bounds.size.w-width)/2;
@@ -306,7 +311,7 @@ static void window_load(Window *window) {
   
   enable_light();
   // Handle bluetooth connection
-  bluetooth_bitmap = gbitmap_create_with_resource(RESOURCE_ID_IMAGE_ATTENTION);
+  disconnect_image = gdraw_command_image_create_with_resource(RESOURCE_ID_DISCONNECTED_IMAGE);
   bluetooth_connection_service_subscribe(handle_bluetooth);
   handle_bluetooth(bluetooth_connection_service_peek());
   
@@ -315,10 +320,9 @@ static void window_load(Window *window) {
 }
 
 static void window_unload(Window *window) {
-  layer_destroy(qr_layer);
-  layer_destroy(text_layer_get_layer(description_layer));
+//  layer_destroy(qr_layer);
+//  layer_destroy(text_layer_get_layer(description_layer));
   bluetooth_connection_service_unsubscribe();
-  gbitmap_destroy(bluetooth_bitmap);
   light_enable(false);
 }
 
