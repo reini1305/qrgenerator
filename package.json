@@ -1,0 +1,53 @@
+{
+  "version": "1.19.0",
+  "author": "Christian Reinbacher",
+  "private": true,
+  "dependencies": {},
+  "keywords": [
+    "pebble-app"
+  ],
+  "pebble": {
+    "sdkVersion": "3",
+    "resources": {
+      "media": [
+        {
+          "memoryFormat": "1Bit",
+          "menuIcon": true,
+          "type": "bitmap",
+          "name": "IMAGE_MENU_ICON",
+          "file": "images/logo.png"
+        },
+        {
+          "type": "raw",
+          "name": "DISCONNECTED_IMAGE",
+          "file": "images/disconnected.pdc"
+        }
+      ]
+    },
+    "projectType": "native",
+    "uuid": "2a3352d5-2d44-437f-9652-9846464012ab",
+    "messageKeys": {
+      "qrcode": 0,
+      "id": 3,
+      "fetch": 1,
+      "description": 2
+    },
+    "enableMultiJS": false,
+    "displayName": "QR Generator",
+    "watchapp": {
+      "onlyShownOnCommunication": false,
+      "hiddenApp": false,
+      "watchface": false
+    },
+    "targetPlatforms": [
+      "aplite",
+      "basalt",
+      "chalk",
+      "diorite"
+    ],
+    "capabilities": [
+      "configurable"
+    ]
+  },
+  "name": "QR Generator"
+}
