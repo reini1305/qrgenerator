@@ -1,4 +1,5 @@
 #include <pebble.h>
+#include "appglance.h"
 
 #define TEXT_LENGTH 256
 #define LAST_ID_KEY 1
@@ -105,11 +106,11 @@ void show_description(char* new_text)
 }
 
 static bool send_to_phone_multi(int quote_key, int symbol) {
-  
+
   // Loadinating
   show_description("Loading...");
   //layer_set_hidden(text_layer_get_layer(description_layer), false);
-  
+
   DictionaryIterator *iter;
   app_message_outbox_begin(&iter);
 
@@ -178,6 +179,7 @@ static void in_received_handler(DictionaryIterator *iter, void *context) {
     else
       is_empty[id]=false;
     show_description(descr_tuple->value->cstring);
+    update_app_glance(description_text);
   }
   /*Tuple *id_tuple = dict_find(iter,QUOTE_KEY_ID);
   if(id_tuple)
@@ -297,7 +299,7 @@ static void window_load(Window *window) {
   qr_layer = layer_create(bounds);
   layer_add_child(window_layer, qr_layer);
   layer_set_update_proc(qr_layer, qr_layer_draw);
-  
+
   layer_set_clips(window_layer,false);
   description_layer = text_layer_create(GRect(0, TEXT_OFFSET_Y, 5*SCREEN_WIDTH, 24));
   layer_set_clips(text_layer_get_layer(description_layer),false);
@@ -308,14 +310,14 @@ static void window_load(Window *window) {
   text_layer_set_text(description_layer,description_text);
   show_description("Loading...");
   layer_add_child(window_layer, text_layer_get_layer(description_layer));
-  
+
   enable_light();
   // Handle bluetooth connection
   disconnect_image = gdraw_command_image_create_with_resource(RESOURCE_ID_DISCONNECTED_IMAGE);
   bluetooth_connection_service_subscribe(handle_bluetooth);
   handle_bluetooth(bluetooth_connection_service_peek());
-  
-  
+
+
   //send_to_phone_multi(QUOTE_KEY_FETCH,id+1);
 }
 
@@ -336,9 +338,9 @@ static void accel_tap_handler(AccelAxisType axis, int32_t direction) {
 static void init(void) {
 
   app_message_init();
-  
+
   animation_finished=true;
-  
+
   accel_tap_service_subscribe(&accel_tap_handler);
 
   window = window_create();
@@ -348,7 +350,7 @@ static void init(void) {
     .load = window_load,
     .unload = window_unload,
   });
-  
+
   if(persist_exists(LAST_ID_KEY))
     id = persist_read_int(LAST_ID_KEY);
   else
