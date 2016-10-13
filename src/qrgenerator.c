@@ -22,11 +22,11 @@ static GDrawCommandImage *disconnect_image;
 static bool is_empty[6]={false,false,false,false,false,false};
 #ifdef PBL_ROUND
 #define TEXT_OFFSET_Y 90
-#define SCREEN_WIDTH 180
 #else
-#define TEXT_OFFSET_Y 144
-#define SCREEN_WIDTH 144
+#define TEXT_OFFSET_Y 24
 #endif
+static int screen_width;
+static int screen_height;
 
 enum {
   QUOTE_KEY_QRCODE = 0x0,
@@ -37,7 +37,7 @@ enum {
 
 static void animation_stopped(PropertyAnimation *animation, bool finished, void *data) {
   animation_finished=true;
-  layer_set_frame(text_layer_get_layer(description_layer),GRect(0, TEXT_OFFSET_Y, 5*SCREEN_WIDTH, 24));
+  layer_set_frame(text_layer_get_layer(description_layer),GRect(0, screen_height - TEXT_OFFSET_Y, 5*screen_width, 24));
 #ifdef PBL_ROUND
   layer_set_hidden(text_layer_get_layer(description_layer), true);
 #endif
@@ -51,7 +51,7 @@ static void animate_layer_bounds(Layer* layer, GRect toRect)
     animation_unschedule((Animation*)animation);
     //property_animation_destroy(animation);
     animation_finished=true;
-    layer_set_frame(text_layer_get_layer(description_layer),GRect(0, TEXT_OFFSET_Y, 5*SCREEN_WIDTH, 24));
+    layer_set_frame(text_layer_get_layer(description_layer),GRect(0, screen_height - TEXT_OFFSET_Y, 5*screen_width, 24));
   }
   animation = property_animation_create_layer_frame(layer, NULL, &toRect);
   animation_set_handlers((Animation*) animation, (AnimationHandlers) {
@@ -85,8 +85,8 @@ void animate_description(void)
   // Scroll to the right
   GRect current_size = layer_get_frame(text_layer_get_layer(description_layer));
   GSize new_size = text_layer_get_content_size(description_layer);
-  animate_layer_bounds(text_layer_get_layer(description_layer), GRect(current_size.origin.x-(new_size.w<SCREEN_WIDTH?SCREEN_WIDTH:new_size.w)+SCREEN_WIDTH,current_size.origin.y,
-                                                                      5*SCREEN_WIDTH,current_size.size.h));
+  animate_layer_bounds(text_layer_get_layer(description_layer), GRect(current_size.origin.x-(new_size.w<screen_width?screen_width:new_size.w)+screen_width,current_size.origin.y,
+                                                                      5*screen_width,current_size.size.h));
 }
 
 void show_description(char* new_text)
@@ -287,6 +287,8 @@ static void window_load(Window *window) {
   window_set_click_config_provider(window,window_click_config_provider);
   Layer *window_layer = window_get_root_layer(window);
   GRect bounds = layer_get_bounds(window_layer);
+  screen_width = bounds.size.w;
+  screen_height = bounds.size.h;
 #ifdef PBL_ROUND
   int offset = 28;
 #else
@@ -301,7 +303,7 @@ static void window_load(Window *window) {
   layer_set_update_proc(qr_layer, qr_layer_draw);
 
   layer_set_clips(window_layer,false);
-  description_layer = text_layer_create(GRect(0, TEXT_OFFSET_Y, 5*SCREEN_WIDTH, 24));
+  description_layer = text_layer_create(GRect(0, screen_height - TEXT_OFFSET_Y, 5*screen_width, 24));
   layer_set_clips(text_layer_get_layer(description_layer),false);
   //text_layer_set_text_alignment(description_layer,GTextAlignmentCenter);
   text_layer_set_font(description_layer, fonts_get_system_font(FONT_KEY_GOTHIC_18));

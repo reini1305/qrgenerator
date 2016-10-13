@@ -12,7 +12,6 @@ static void prv_update_app_glance(AppGlanceReloadSession *session,
   const char *message = context;
 
   if(message) {
-    time_t expiration_time = time(NULL);
     // Create the AppGlanceSlice
     // NOTE: When .icon_resource_id is not set, the app's default icon is used
     const AppGlanceSlice entry = (AppGlanceSlice) {
@@ -20,7 +19,7 @@ static void prv_update_app_glance(AppGlanceReloadSession *session,
         .icon = PUBLISHED_ID_LOGO,
         .subtitle_template_string = message
       },
-      .expiration_time = expiration_time+3600*24*7
+      .expiration_time = APP_GLANCE_SLICE_NO_EXPIRATION
     };
 
     // Add the slice, and check the result
@@ -35,6 +34,10 @@ static void prv_update_app_glance(AppGlanceReloadSession *session,
 
 void update_app_glance(char *text) {
 #if PBL_API_EXISTS(app_glance_reload)
-    app_glance_reload(prv_update_app_glance,text);
+#ifdef PBL_ROUND
+  app_glance_reload(prv_update_app_glance,&text[4]);
+#else
+  app_glance_reload(prv_update_app_glance,text);
+#endif
 #endif
 }
